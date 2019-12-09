@@ -1,0 +1,64 @@
+Question 1
+
+WITH t1 AS (SELECT COUNT(r.rental_id)rental_count, c.category_id id ,c.name film_category
+FROM film f
+JOIN film_category fc
+ON f.film_id=fc.film_id
+JOIN inventory i
+ON f.film_id=i.film_id
+JOIN rental r
+ON i.inventory_id=r.inventory_id
+JOIN category c
+ON c.category_id = fc.category_id
+GROUP BY 2,3)
+
+SELECT id, film_category, SUM(rental_count) total_rented
+FROM t1
+GROUP BY 1,2
+ORDER BY total_rented DESC
+
+
+Question 2
+
+SELECT country.country, SUM(customer.customer_id)AS total_customers, DENSE_RANK() OVER (ORDER BY SUM(payment.amount) DESC)
+FROM country
+JOIN city
+ON city.country_id=country.country_id
+JOIN address
+ON address.city_id = city.city_id
+JOIN customer
+ON customer.address_id = address.address_id
+JOIN payment
+ON customer.customer_id = payment.customer_id
+GROUP BY 1
+ORDER BY total_customers DESC
+LIMIT 10
+
+
+Question 3
+
+WITH t1 AS (SELECT CONCAT(actor.first_name,' ',actor.last_name) AS ACTOR_name, inventory.inventory_id invent_id, rental.rental_date rent_date
+FROM actor 
+JOIN film_actor
+ON actor.actor_id = film_actor.actor_id
+JOIN film 
+ON film.film_id=film_actor.film_id
+JOIN inventory
+ON inventory.film_id = film.film_id
+JOIN rental 
+ON rental.inventory_id = inventory.inventory_id)
+
+SELECT actor_name,COUNT(invent_id) movies_rented
+FROM t1
+GROUP BY 1
+ORDER BY movies_rented DESC
+LIMIT 5
+
+Question 4
+
+SELECT DATE_TRUNC('day',rental.rental_date) AS date , COUNT(rental_id) most_rents
+FROM rental
+JOIN customer
+ON customer.customer_id = rental.customer_id
+GROUP BY rental.rental_date
+ORDER BY most_rents DESC
